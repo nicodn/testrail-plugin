@@ -22,28 +22,39 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.TaskListener;
-import hudson.util.ListBoxModel;
-import hudson.tasks.*;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Notifier;
+import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+import java.io.IOException;
+import java.util.List;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
+import javax.xml.bind.JAXBException;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.testrail.JunitResults.*;
+import org.jenkinsci.plugins.testrail.JunitResults.Failure;
+import org.jenkinsci.plugins.testrail.JunitResults.JUnitResults;
+import org.jenkinsci.plugins.testrail.JunitResults.Testcase;
+import org.jenkinsci.plugins.testrail.JunitResults.Testsuite;
+import org.jenkinsci.plugins.testrail.TestRailObjects.CaseStatus;
+import org.jenkinsci.plugins.testrail.TestRailObjects.ElementNotFoundException;
+import org.jenkinsci.plugins.testrail.TestRailObjects.ExistingTestCases;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Milestone;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Project;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Result;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Results;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Suite;
+import org.jenkinsci.plugins.testrail.TestRailObjects.TestRailException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.jenkinsci.plugins.testrail.TestRailObjects.*;
-
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
-import javax.xml.bind.JAXBException;
-import java.io.IOException;
-import java.util.List;
 
 public class TestRailNotifier extends Notifier implements SimpleBuildStep {
 
@@ -171,12 +182,12 @@ public class TestRailNotifier extends Notifier implements SimpleBuildStep {
             taskListener.getLogger().println("status: " + response.getStatus());
             taskListener.getLogger().println("body :\n" + response.getBody());
         }
-        try {
-            testrail.closeRun(runId);
-        } catch (Exception e) {
-            taskListener.getLogger().println("Failed to close test run in TestRail.");
-            taskListener.getLogger().println("EXCEPTION: " + e.getMessage());
-        }
+//        try {
+//            testrail.closeRun(runId);
+//        } catch (Exception e) {
+//            taskListener.getLogger().println("Failed to close test run in TestRail.");
+//            taskListener.getLogger().println("EXCEPTION: " + e.getMessage());
+//        }
     }
 
     public Results addSuite(Testsuite suite, String parentId, ExistingTestCases existingCases) throws IOException, TestRailException {
