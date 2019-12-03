@@ -18,6 +18,9 @@
  */
 package org.jenkinsci.plugins.testrail;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import javax.xml.ws.http.HTTPException;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -25,21 +28,22 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-
-import org.jenkinsci.plugins.testrail.JunitResults.Testcase;
-import org.jenkinsci.plugins.testrail.TestRailObjects.*;
-
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.testrail.JunitResults.Testcase;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Case;
+import org.jenkinsci.plugins.testrail.TestRailObjects.ElementNotFoundException;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Milestone;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Project;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Result;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Results;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Section;
+import org.jenkinsci.plugins.testrail.TestRailObjects.Suite;
+import org.jenkinsci.plugins.testrail.TestRailObjects.TestRailException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.xml.ws.http.HTTPException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.InterruptedException;
-import java.util.List;
-import static org.jenkinsci.plugins.testrail.Utils.*;
+import static org.jenkinsci.plugins.testrail.Utils.log;
 /**
  * Created by Drew on 3/19/14.
  */
@@ -85,9 +89,9 @@ public class TestRailClient {
                     log(e.toString());
                 }
             }
-       } while (response.getStatus() == 429);
+        } while (response.getStatus() == 429);
 
-       return response;
+        return response;
     }
 
     private TestRailResponse httpGetInt(String path) throws IOException {
@@ -107,7 +111,7 @@ public class TestRailClient {
     }
 
     private TestRailResponse httpPost(String path, String payload)
-        throws UnsupportedEncodingException, IOException, HTTPException, TestRailException {
+            throws UnsupportedEncodingException, IOException, HTTPException, TestRailException {
         TestRailResponse response;
 
         do {
@@ -272,7 +276,7 @@ public class TestRailClient {
         return s;
     }
 
-    public Section addSection(String sectionName, int projectId, int suiteId, String parentId) 
+    public Section addSection(String sectionName, int projectId, int suiteId, String parentId)
             throws IOException, ElementNotFoundException, TestRailException {
         //Section section = new Section();
         String payload = new JSONObject().put("name", sectionName).put("suite_id", suiteId).put("parent_id", parentId).toString();
@@ -284,28 +288,27 @@ public class TestRailClient {
 
     private Case createCaseFromJson(JSONObject o) {
         Case s = new Case();
-        
+
         s.setTitle(o.getString("title"));
         s.setId(o.getInt("id"));
         s.setSectionId(o.getInt("section_id"));
         s.setRefs(o.optString("refs"));
-
         return s;
     }
 
-    public Case addCase(Testcase caseToAdd, int sectionId) 
+    public Case addCase(Testcase caseToAdd, int sectionId)
             throws IOException, TestRailException {
         JSONObject payload = new JSONObject().put("title", caseToAdd.getName());
+        payload.put("custom_automation_type", 1); // Test is automated if it's being added from jenkins plugin
         if (!StringUtils.isEmpty(caseToAdd.getRefs())) {
             payload.put("refs", caseToAdd.getRefs());
         }
-
         String body = httpPost("index.php?/api/v2/add_case/" + sectionId, payload.toString()).getBody();
         Case c = createCaseFromJson(new JSONObject(body));
         return c;
     }
 
-    public TestRailResponse addResultsForCases(int runId, Results results) 
+    public TestRailResponse addResultsForCases(int runId, Results results)
             throws IOException, TestRailException {
         JSONArray a = new JSONArray();
         for (int i = 0; i < results.getResults().size(); i++) {
@@ -332,7 +335,7 @@ public class TestRailClient {
         String body = httpGet("index.php?/api/v2/get_milestones/" + projectId).getBody();
         JSONArray json;
         try {
-          json = new JSONArray(body);
+            json = new JSONArray(body);
         } catch (JSONException e) {
             return new Milestone[0];
         }
@@ -348,18 +351,18 @@ public class TestRailClient {
     }
 
     public String getMilestoneID(String milesoneName, int projectId) throws IOException, ElementNotFoundException {
-      for (Milestone mstone: getMilestones(projectId)) {
-         if (mstone.getName().equals(milesoneName)) {
-             return mstone.getId();
-         }
-      }
-      throw new ElementNotFoundException("Milestone id not found.");
+        for (Milestone mstone: getMilestones(projectId)) {
+            if (mstone.getName().equals(milesoneName)) {
+                return mstone.getId();
+            }
+        }
+        throw new ElementNotFoundException("Milestone id not found.");
     }
-
-    public boolean closeRun(int runId)
-            throws IOException, TestRailException {
-        String payload = "";
-        int status = httpPost("index.php?/api/v2/close_run/" + runId, payload).getStatus();
-        return (200 == status);
-    }
+    //Don't want to close run after tests run completes
+//    public boolean closeRun(int runId)
+//            throws IOException, TestRailException {
+//        String payload = "";
+//        int status = httpPost("index.php?/api/v2/close_run/" + runId, payload).getStatus();
+//        return (200 == status);
+//    }
 }
