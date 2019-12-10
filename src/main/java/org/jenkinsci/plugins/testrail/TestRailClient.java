@@ -382,10 +382,10 @@ public class TestRailClient {
     }
 
     //Don't want to close run after tests run completes
-//    public boolean closeRun(int runId)
-//            throws IOException, TestRailException {
-//        String payload = "";
-//        int status = httpPost("index.php?/api/v2/close_run/" + runId, payload).getStatus();
-//        return (200 == status);
-//    }
+    public boolean closeRun(int runId)
+            throws IOException, TestRailException {
+        String payload = "";
+        int status = httpPost("index.php?/api/v2/close_run/" + runId, payload).getStatus();
+        return (200 == status);
+    }
 }
