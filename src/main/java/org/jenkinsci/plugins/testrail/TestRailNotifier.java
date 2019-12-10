@@ -166,7 +166,8 @@ public class TestRailNotifier extends Notifier implements SimpleBuildStep {
         int runId = -1;
         TestRailResponse response = null;
         try {
-            runId = testrail.addRun(testCases.getProjectId(), testCases.getSuiteId(), milestoneId, runComment);
+
+            runId = testrail.addRun(testCases.getProjectId(), testCases.getSuiteId(), milestoneId, runComment); // TODO add logic to check for an open run and add results over if open run exists
             response = testrail.addResultsForCases(runId, results);
         } catch (TestRailException e) {
             taskListener.getLogger().println("Error pushing results to TestRail");
