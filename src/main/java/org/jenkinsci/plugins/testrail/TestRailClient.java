@@ -65,7 +65,7 @@ public class TestRailClient {
         this.password = password;
     }
 
-    private JSONObject deviceData = new JSONObject("/devices.json");
+    private JSONObject deviceData = new JSONObject("devices.json");
     private String envDetails = deviceData.getString("platform") + " " + deviceData.getString("platformVersion") + ", " +
             deviceData.getString("deviceName");
 
