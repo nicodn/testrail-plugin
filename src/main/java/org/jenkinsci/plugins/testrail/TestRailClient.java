@@ -65,10 +65,6 @@ public class TestRailClient {
         this.password = password;
     }
 
-    private JSONObject deviceData = new JSONObject("devices.json");
-    private String envDetails = deviceData.getString("platform") + " " + deviceData.getString("platformVersion") + ", " +
-            deviceData.getString("deviceName");
-
     private HttpClient setUpHttpClient(HttpMethod method) {
         HttpClient httpclient = new HttpClient();
         httpclient.getParams().setAuthenticationPreemptive(true);
@@ -314,6 +310,9 @@ public class TestRailClient {
 
     public TestRailResponse addResultsForCases(int runId, Results results)
             throws IOException, TestRailException {
+        JSONObject deviceData = new JSONObject("devices.json");
+        String envDetails = deviceData.getString("platform") + " " + deviceData.getString("platformVersion") + ", " +
+                deviceData.getString("deviceName");
         JSONArray a = new JSONArray();
         for (int i = 0; i < results.getResults().size(); i++) {
             JSONObject o = new JSONObject();
