@@ -310,7 +310,7 @@ public class TestRailClient {
 
     public TestRailResponse addResultsForCases(int runId, Results results)
             throws IOException, TestRailException {
-        JSONObject deviceData = new JSONObject("devices.json");
+        JSONObject deviceData = new JSONObject("*/artifact/devices.json");
         String envDetails = deviceData.getString("platform") + " " + deviceData.getString("platformVersion") + ", " +
                 deviceData.getString("deviceName");
         JSONArray a = new JSONArray();
