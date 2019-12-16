@@ -95,7 +95,6 @@ public class TestRailNotifier extends Notifier implements SimpleBuildStep {
     public void setCreateNewTestcases(boolean newcases) {this.createNewTestcases = newcases; }
     public boolean getCreateNewTestcases() { return  this.createNewTestcases; }
 
-
     @Override
     public void perform(@Nonnull hudson.model.Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
         TestRailClient  testrail = getDescriptor().getTestrailInstance();

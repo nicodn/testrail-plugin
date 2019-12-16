@@ -65,6 +65,10 @@ public class TestRailClient {
         this.password = password;
     }
 
+    private JSONObject deviceData = new JSONObject("/devices.json");
+    private String envDetails = deviceData.getString("platform") + " " + deviceData.getString("platformVersion") + ", " +
+            deviceData.getString("deviceName");
+
     private HttpClient setUpHttpClient(HttpMethod method) {
         HttpClient httpclient = new HttpClient();
         httpclient.getParams().setAuthenticationPreemptive(true);
@@ -314,7 +318,7 @@ public class TestRailClient {
         for (int i = 0; i < results.getResults().size(); i++) {
             JSONObject o = new JSONObject();
             Result r = results.getResults().get(i);
-            o.put("case_id", r.getCaseId()).put("status_id", r.getStatus().getValue()).put("comment", r.getComment()).put("elapsed", r.getElapsedTimeString());
+            o.put("case_id", r.getCaseId()).put("status_id", r.getStatus().getValue()).put("comment", r.getComment()).put("elapsed", r.getElapsedTimeString()).put("version", envDetails);
             a.put(o);
         }
 
