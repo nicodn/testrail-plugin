@@ -308,16 +308,13 @@ public class TestRailClient {
         return c;
     }
 
-    public TestRailResponse addResultsForCases(int runId, Results results)
+    public TestRailResponse addResultsForCases(int runId, Results results, String environment)
             throws IOException, TestRailException {
-        JSONObject deviceData = new JSONObject("*/artifact/devices.json");
-        String envDetails = deviceData.getString("platform") + " " + deviceData.getString("platformVersion") + ", " +
-                deviceData.getString("deviceName");
         JSONArray a = new JSONArray();
         for (int i = 0; i < results.getResults().size(); i++) {
             JSONObject o = new JSONObject();
             Result r = results.getResults().get(i);
-            o.put("case_id", r.getCaseId()).put("status_id", r.getStatus().getValue()).put("comment", r.getComment()).put("elapsed", r.getElapsedTimeString()).put("version", envDetails);
+            o.put("case_id", r.getCaseId()).put("status_id", r.getStatus().getValue()).put("comment", r.getComment()).put("elapsed", r.getElapsedTimeString()).put("version", environment);
             a.put(o);
         }
 
@@ -384,7 +381,6 @@ public class TestRailClient {
         throw new ElementNotFoundException("Milestone id not found.");
     }
 
-    //Don't want to close run after tests run completes
     public boolean closeRun(int runId)
             throws IOException, TestRailException {
         String payload = "";

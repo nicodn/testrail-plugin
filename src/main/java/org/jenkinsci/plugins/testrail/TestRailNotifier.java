@@ -64,16 +64,20 @@ public class TestRailNotifier extends Notifier implements SimpleBuildStep {
     private String testrailMilestone;
     private boolean enableMilestone;
     private boolean createNewTestcases;
+    private boolean closeTestRun;
+    private String envDetails;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public TestRailNotifier(int testrailProject, int testrailSuite, String junitResultsGlob, String testrailMilestone, boolean enableMilestone, boolean createNewTestcases) {
+    public TestRailNotifier(int testrailProject, int testrailSuite, String junitResultsGlob, String testrailMilestone, boolean enableMilestone, boolean createNewTestcases, boolean closeTestRun, String envDetails) {
         this.testrailProject = testrailProject;
         this.testrailSuite = testrailSuite;
         this.junitResultsGlob = junitResultsGlob;
         this.testrailMilestone = testrailMilestone;
         this.enableMilestone = enableMilestone;
         this.createNewTestcases = createNewTestcases;
+        this.closeTestRun = closeTestRun;
+        this.envDetails = envDetails;
     }
 
     @DataBoundSetter
@@ -94,6 +98,12 @@ public class TestRailNotifier extends Notifier implements SimpleBuildStep {
     @DataBoundSetter
     public void setCreateNewTestcases(boolean newcases) {this.createNewTestcases = newcases; }
     public boolean getCreateNewTestcases() { return  this.createNewTestcases; }
+    @DataBoundSetter
+    public void setCloseTestRun(boolean closeTestRun) {this.closeTestRun = closeTestRun; }
+    public boolean getCloseTestRun() { return this.closeTestRun; }
+    @DataBoundSetter
+    public void setEnvDetails(String details) {this.envDetails = details; }
+    public String getEnvDetails() {return this.envDetails; }
 
     @Override
     public void perform(@Nonnull hudson.model.Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
@@ -170,7 +180,7 @@ public class TestRailNotifier extends Notifier implements SimpleBuildStep {
             } else {
                 runId = testrail.addRun(testCases.getProjectId(), testCases.getSuiteId(), milestoneId, runComment); // TODO add logic to check for an open run and add results over if open run exists
             }
-            response = testrail.addResultsForCases(runId, results);
+            response = testrail.addResultsForCases(runId, results, getEnvDetails());
         } catch (TestRailException e) {
             taskListener.getLogger().println("Error pushing results to TestRail");
             taskListener.getLogger().println(e.getMessage());
@@ -185,12 +195,16 @@ public class TestRailNotifier extends Notifier implements SimpleBuildStep {
             taskListener.getLogger().println("status: " + response.getStatus());
             taskListener.getLogger().println("body :\n" + response.getBody());
         }
-//        try {
-//            testrail.closeRun(runId);
-//        } catch (Exception e) {
-//            taskListener.getLogger().println("Failed to close test run in TestRail.");
-//            taskListener.getLogger().println("EXCEPTION: " + e.getMessage());
-//        }
+        if(getCloseTestRun()) {
+            try {
+                testrail.closeRun(runId);
+            } catch (Exception e) {
+                taskListener.getLogger().println("Failed to close test run in TestRail.");
+                taskListener.getLogger().println("EXCEPTION: " + e.getMessage());
+            }
+        } else {
+            taskListener.getLogger().println("Leaving test run open");
+        }
     }
 
     public Results addSuite(Testsuite suite, String parentId, ExistingTestCases existingCases) throws IOException, TestRailException {
